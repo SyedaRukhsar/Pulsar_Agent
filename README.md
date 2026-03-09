@@ -1,25 +1,15 @@
 # PULSAR Agents
 
-Python-based content aggregation agents for PULSAR Intelligence.
-Runs on GitHub Actions (free) — no VPS needed.
+Python-based content aggregation agents for PULSAR Intelligence platform.
+Runs automatically on GitHub Actions (free) — no VPS or server needed.
 
-## Setup
+## What It Does
 
-### 1. GitHub Secrets add karo
-Repository → Settings → Secrets → Actions → New secret
+Fetches personalized content from the internet based on each user's interests,
+generates AI summaries using Groq, and saves everything to Firebase Firestore.
+The PULSAR frontend then displays this content to users in real time.
 
-| Secret Name | Value |
-|---|---|
-| `FIREBASE_SERVICE_ACCOUNT` | Firebase service account JSON (poora) |
-| `GROQ_API_KEY` | Groq API key |
-
-### 2. Firebase Service Account kaise milega
-1. Firebase Console → Project Settings → Service Accounts
-2. "Generate new private key" click karo
-3. Downloaded JSON file ka poora content copy karo
-4. GitHub Secret mein paste karo
-
-### 3. Agents
+## Agents
 
 | Agent | File | Schedule | Firestore Collection |
 |---|---|---|---|
@@ -30,13 +20,74 @@ Repository → Settings → Secrets → Actions → New secret
 | Challenges | `agents/challenges_agent.py` | Every 6h | `feed_problems` |
 | Datasets | `agents/datasets_agent.py` | Every 12h | `feed_datasets` |
 
-### 4. Local test karo
+## Project Structure
+```
+pulsar-agents/
+├── .github/
+│   └── workflows/
+│       ├── papers.yml
+│       ├── articles.yml
+│       ├── jobs.yml
+│       ├── scholarships.yml
+│       ├── challenges.yml
+│       └── datasets.yml
+├── agents/
+│   ├── papers_agent.py
+│   ├── articles_agent.py
+│   ├── jobs_agent.py
+│   ├── scholarships_agent.py
+│   ├── challenges_agent.py
+│   └── datasets_agent.py
+├── core/
+│   ├── firestore_client.py
+│   ├── groq_client.py
+│   └── utils.py
+├── requirements.txt
+└── README.md
+```
+
+## Setup
+
+### Step 1 — Add GitHub Secrets
+Go to: Repository → Settings → Secrets and variables → Actions → New repository secret
+
+| Secret Name | Value |
+|---|---|
+| `FIREBASE_SERVICE_ACCOUNT` | Full Firebase service account JSON content |
+| `GROQ_API_KEY` | Your Groq API key from console.groq.com |
+
+### Step 2 — Get Firebase Service Account JSON
+1. Go to Firebase Console
+2. Project Settings → Service Accounts
+3. Click "Generate new private key"
+4. Copy the entire content of the downloaded JSON file
+5. Paste it as the value of `FIREBASE_SERVICE_ACCOUNT` secret
+
+### Step 3 — Run Manually (First Time)
+1. Go to Actions tab in your repository
+2. Select any workflow (e.g. "PULSAR — Papers Agent")
+3. Click "Run workflow"
+4. Check logs to confirm it worked
+
+### Step 4 — Automatic Scheduling
+Once secrets are added, GitHub Actions will run each agent automatically
+on its schedule — no manual action needed.
+
+## Local Testing
 ```bash
 pip install -r requirements.txt
-export FIREBASE_SERVICE_ACCOUNT='{ paste json here }'
-export GROQ_API_KEY='your_groq_key'
+
+export FIREBASE_SERVICE_ACCOUNT='{ paste full json here }'
+export GROQ_API_KEY='your_groq_key_here'
+
 python agents/papers_agent.py
 ```
 
-### 5. Manual trigger
-GitHub → Actions tab → Select workflow → "Run workflow"
+## Tech Stack
+
+- **Python 3.11**
+- **feedparser** — RSS feed parsing
+- **Groq** — AI summaries (llama-3.3-70b-versatile)
+- **Google Cloud Firestore** — database
+- **GitHub Actions** — free scheduler
+- **PRAW** — Reddit API (for Challenges agent)
